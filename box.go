@@ -39,7 +39,7 @@ func (b *Box) X0() (ret int) {
 
 func (b *Box) Y0() (ret int) {
 	b.cond.L.Lock()
-	for b.y0 == -1 {
+	for b.y0 == -1 { //NOCOVER
 		b.cond.Wait()
 	}
 	ret = b.y0
@@ -49,7 +49,7 @@ func (b *Box) Y0() (ret int) {
 
 func (b *Box) X1() (ret int) {
 	b.cond.L.Lock()
-	for b.x1 == -1 {
+	for b.x1 == -1 { //NOCOVER
 		b.cond.Wait()
 	}
 	ret = b.x1
@@ -59,7 +59,7 @@ func (b *Box) X1() (ret int) {
 
 func (b *Box) Y1() (ret int) {
 	b.cond.L.Lock()
-	for b.y1 == -1 {
+	for b.y1 == -1 { //NOCOVER
 		b.cond.Wait()
 	}
 	ret = b.y1
