@@ -49,3 +49,9 @@ func (u *UI) Relayout() {
 	}
 	u.wg.Wait()
 }
+
+func (u *UI) Resize(width, height int) {
+	u.Root.x1 = width
+	u.Root.y1 = height
+	u.Relayout()
+}

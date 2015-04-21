@@ -8,6 +8,22 @@ type baseBox struct {
 	cond           *sync.Cond
 }
 
+type IBox interface {
+	X0() int
+	Y0() int
+	X1() int
+	Y1() int
+	TopLeft() Point
+	TopMiddle() Point
+	TopRight() Point
+	MiddleLeft() Point
+	Middle() Point
+	MiddleRight() Point
+	BottomLeft() Point
+	BottomMiddle() Point
+	BottomRight() Point
+}
+
 type Box struct {
 	*baseBox
 	ui  *UI

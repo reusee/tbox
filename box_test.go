@@ -4,22 +4,18 @@ import "testing"
 
 func TestLayout(t *testing.T) {
 	ui := New()
-	root := ui.NewBox(func() (Point, Point) {
-		return Point{0, 0}, Point{400, 300}
-	})
+	ui.Resize(400, 300)
 	b0 := ui.NewBox(func() (Point, Point) {
-		return root.TopLeft().Move(1, 1), root.BottomRight().Move(-1, -1)
+		return ui.Root.TopLeft().Move(1, 1), ui.Root.BottomRight().Move(-1, -1)
 	})
-	if (root.TopLeft() != Point{0, 0}) || (root.BottomRight() != Point{400, 300}) {
+	if (ui.Root.TopLeft() != Point{0, 0}) || (ui.Root.BottomRight() != Point{400, 300}) {
 		t.Fatal("root pos")
 	}
 	if (b0.TopLeft() != Point{1, 1}) || (b0.BottomRight() != Point{399, 299}) {
 		t.Fatal("b0 pos")
 	}
-	root.Repos(func() (Point, Point) {
-		return Point{0, 0}, Point{800, 600}
-	})
-	if (root.TopLeft() != Point{0, 0}) || (root.BottomRight() != Point{800, 600}) {
+	ui.Resize(800, 600)
+	if (ui.Root.TopLeft() != Point{0, 0}) || (ui.Root.BottomRight() != Point{800, 600}) {
 		t.Fatal("root pos")
 	}
 	if (b0.TopLeft() != Point{1, 1}) || (b0.BottomRight() != Point{799, 599}) {
@@ -29,24 +25,20 @@ func TestLayout(t *testing.T) {
 
 func TestLayout2(t *testing.T) {
 	ui := New()
-	root := ui.NewBox(func() (Point, Point) {
-		return Point{0, 0}, Point{400, 300}
-	})
-	last := root
+	ui.Resize(400, 300)
+	var last IBox = ui.Root
 	n := 512
 	boxes := []*Box{}
 	for i := 0; i < n; i++ {
-		follow := last
+		var follow IBox = last
 		b := ui.NewBox(func() (Point, Point) {
 			return follow.TopLeft().Move(1, 1), follow.BottomRight().Move(-1, -1)
 		})
 		boxes = append(boxes, b)
 		last = b
 	}
-	root.Repos(func() (Point, Point) {
-		return Point{0, 0}, Point{800, 600}
-	})
-	last = root
+	ui.Resize(800, 600)
+	last = ui.Root
 	for i := 0; i < n; i++ {
 		box := boxes[i]
 		if box.TopLeft() != last.TopLeft().Move(1, 1) {
