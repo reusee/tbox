@@ -2,32 +2,42 @@ package tbox
 
 import "sync"
 
-type Box struct {
+type baseBox struct {
 	x0, y0, x1, y1 int
 	lock           *sync.Mutex
 	cond           *sync.Cond
-	pos            func() (Point, Point)
-	ui             *UI
+}
+
+type Box struct {
+	*baseBox
+	ui  *UI
+	pos func() (Point, Point)
+}
+
+type RootBox struct {
+	*baseBox
 }
 
 func (u *UI) NewBox(pos func() (Point, Point)) *Box {
 	lock := new(sync.Mutex)
 	topLeft, bottomRight := pos()
 	box := &Box{
-		lock: lock,
-		cond: sync.NewCond(lock),
-		pos:  pos,
-		x0:   topLeft.X,
-		y0:   topLeft.Y,
-		x1:   bottomRight.X,
-		y1:   bottomRight.Y,
-		ui:   u,
+		baseBox: &baseBox{
+			lock: lock,
+			cond: sync.NewCond(lock),
+			x0:   topLeft.X,
+			y0:   topLeft.Y,
+			x1:   bottomRight.X,
+			y1:   bottomRight.Y,
+		},
+		ui:  u,
+		pos: pos,
 	}
 	u.boxes = append(u.boxes, box)
 	return box
 }
 
-func (b *Box) X0() (ret int) {
+func (b *baseBox) X0() (ret int) {
 	b.cond.L.Lock()
 	for b.x0 == -1 {
 		b.cond.Wait()
@@ -37,7 +47,7 @@ func (b *Box) X0() (ret int) {
 	return
 }
 
-func (b *Box) Y0() (ret int) {
+func (b *baseBox) Y0() (ret int) {
 	b.cond.L.Lock()
 	for b.y0 == -1 { //NOCOVER
 		b.cond.Wait()
@@ -47,7 +57,7 @@ func (b *Box) Y0() (ret int) {
 	return
 }
 
-func (b *Box) X1() (ret int) {
+func (b *baseBox) X1() (ret int) {
 	b.cond.L.Lock()
 	for b.x1 == -1 { //NOCOVER
 		b.cond.Wait()
@@ -57,7 +67,7 @@ func (b *Box) X1() (ret int) {
 	return
 }
 
-func (b *Box) Y1() (ret int) {
+func (b *baseBox) Y1() (ret int) {
 	b.cond.L.Lock()
 	for b.y1 == -1 { //NOCOVER
 		b.cond.Wait()
@@ -67,39 +77,39 @@ func (b *Box) Y1() (ret int) {
 	return
 }
 
-func (b *Box) TopLeft() Point {
+func (b *baseBox) TopLeft() Point {
 	return Point{b.X0(), b.Y0()}
 }
 
-func (b *Box) TopMiddle() Point {
+func (b *baseBox) TopMiddle() Point {
 	return Point{(b.X0() + b.X1()) / 2, b.Y0()}
 }
 
-func (b *Box) TopRight() Point {
+func (b *baseBox) TopRight() Point {
 	return Point{b.X1(), b.Y0()}
 }
 
-func (b *Box) MiddleLeft() Point {
+func (b *baseBox) MiddleLeft() Point {
 	return Point{b.X0(), (b.Y0() + b.Y1()) / 2}
 }
 
-func (b *Box) Middle() Point {
+func (b *baseBox) Middle() Point {
 	return Point{(b.X0() + b.X1()) / 2, (b.Y0() + b.Y1()) / 2}
 }
 
-func (b *Box) MiddleRight() Point {
+func (b *baseBox) MiddleRight() Point {
 	return Point{b.X1(), (b.Y0() + b.Y1()) / 2}
 }
 
-func (b *Box) BottomLeft() Point {
+func (b *baseBox) BottomLeft() Point {
 	return Point{b.X0(), b.Y1()}
 }
 
-func (b *Box) BottomMiddle() Point {
+func (b *baseBox) BottomMiddle() Point {
 	return Point{(b.X0() + b.X1()) / 2, b.Y1()}
 }
 
-func (b *Box) BottomRight() Point {
+func (b *baseBox) BottomRight() Point {
 	return Point{b.X1(), b.Y1()}
 }
 

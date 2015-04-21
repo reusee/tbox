@@ -6,12 +6,20 @@ type UI struct {
 	lock  *sync.Mutex
 	boxes []*Box
 	wg    *sync.WaitGroup
+	Root  *RootBox
 }
 
 func New() *UI {
+	lock := new(sync.Mutex)
 	return &UI{
 		lock: new(sync.Mutex),
 		wg:   new(sync.WaitGroup),
+		Root: &RootBox{
+			baseBox: &baseBox{
+				lock: lock,
+				cond: sync.NewCond(lock),
+			},
+		},
 	}
 }
 
