@@ -53,43 +53,49 @@ func (u *UI) NewBox(pos func() (Point, Point)) *Box {
 	return box
 }
 
-func (b *baseBox) X0() (ret int) {
+func (b *baseBox) withCondLock(fn func()) {
 	b.cond.L.Lock()
-	for b.x0 == -1 {
-		b.cond.Wait()
-	}
-	ret = b.x0
+	fn()
 	b.cond.L.Unlock()
+}
+
+func (b *baseBox) X0() (ret int) {
+	b.withCondLock(func() {
+		for b.x0 == -1 {
+			b.cond.Wait()
+		}
+		ret = b.x0
+	})
 	return
 }
 
 func (b *baseBox) Y0() (ret int) {
-	b.cond.L.Lock()
-	for b.y0 == -1 { //NOCOVER
-		b.cond.Wait()
-	}
-	ret = b.y0
-	b.cond.L.Unlock()
+	b.withCondLock(func() {
+		for b.y0 == -1 { //NOCOVER
+			b.cond.Wait()
+		}
+		ret = b.y0
+	})
 	return
 }
 
 func (b *baseBox) X1() (ret int) {
-	b.cond.L.Lock()
-	for b.x1 == -1 { //NOCOVER
-		b.cond.Wait()
-	}
-	ret = b.x1
-	b.cond.L.Unlock()
+	b.withCondLock(func() {
+		for b.x1 == -1 { //NOCOVER
+			b.cond.Wait()
+		}
+		ret = b.x1
+	})
 	return
 }
 
 func (b *baseBox) Y1() (ret int) {
-	b.cond.L.Lock()
-	for b.y1 == -1 { //NOCOVER
-		b.cond.Wait()
-	}
-	ret = b.y1
-	b.cond.L.Unlock()
+	b.withCondLock(func() {
+		for b.y1 == -1 { //NOCOVER
+			b.cond.Wait()
+		}
+		ret = b.y1
+	})
 	return
 }
 
@@ -130,13 +136,15 @@ func (b *baseBox) BottomRight() Point {
 }
 
 func (b *Box) Repos(pos func() (Point, Point)) {
-	b.ui.lock.Lock()
-	b.pos = pos
-	topLeft, bottomRight := pos()
-	b.x0 = topLeft.X
-	b.y0 = topLeft.Y
-	b.x1 = bottomRight.X
-	b.y1 = bottomRight.Y
-	b.ui.lock.Unlock()
+	b.ui.withLock(func() {
+		b.pos = pos
+		topLeft, bottomRight := pos()
+		b.withCondLock(func() {
+			b.x0 = topLeft.X
+			b.y0 = topLeft.Y
+			b.x1 = bottomRight.X
+			b.y1 = bottomRight.Y
+		})
+	})
 	b.ui.Relayout()
 }
