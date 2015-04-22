@@ -6,6 +6,7 @@ type baseBox struct {
 	x0, y0, x1, y1 int
 	lock           *sync.Mutex
 	cond           *sync.Cond
+	text           []Line
 }
 
 type IBox interface {
